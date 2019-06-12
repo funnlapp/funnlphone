@@ -1,5 +1,6 @@
 package com.example.funnl
 
+import android.Manifest
 import android.annotation.SuppressLint
 import android.app.*
 import android.support.v7.app.AppCompatActivity
@@ -7,11 +8,20 @@ import android.os.Bundle
 
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.Icon
+import android.os.Environment
+import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
+import android.util.Log
 import android.view.View
 import kotlinx.android.synthetic.main.activity_main.*
+import java.io.File
+import java.io.FileOutputStream
+import java.io.OutputStreamWriter
+import java.time.LocalDateTime
+import java.time.format.DateTimeFormatter
 
 @SuppressLint("ByteOrderMark")
 class MainActivity: AppCompatActivity() {
@@ -22,6 +32,9 @@ class MainActivity: AppCompatActivity() {
     private var notificationManager: NotificationManager? = null
     private val channelIDOngoing = "app.funnl.persist"
     private val channelID =  "app.funnl.info"
+
+    private val TAG = "funnl"
+    private val RECORD_REQUEST_CODE = 101
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +50,25 @@ class MainActivity: AppCompatActivity() {
             "Funnl Status Notifications", "To Pass Info To Users")
 
         handleIntent()
+        setupPermissions()
+        sendNotification(View(this))
+    }
+
+    private fun setupPermissions() {
+        val permission = ContextCompat.checkSelfPermission(this,
+            Manifest.permission.RECORD_AUDIO)
+
+        if (permission != PackageManager.PERMISSION_GRANTED) {
+            Log.i(TAG, "Permission to record denied")
+            makeRequest()
+        }
+    }
+
+
+    private fun makeRequest() {
+        ActivityCompat.requestPermissions(this,
+            arrayOf(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.ACCESS_FINE_LOCATION),
+            RECORD_REQUEST_CODE)
     }
 
     private fun createNotificationChannel(id: String, name: String, description: String) {
@@ -96,6 +128,15 @@ class MainActivity: AppCompatActivity() {
 
     }
 
+    private fun createLog() {
+        val card = Environment.getExternalStorageDirectory()
+        val file = File (card.getAbsolutePath(), "funnl.txt")
+        val osw = OutputStreamWriter (FileOutputStream (file))
+        osw.appendln()
+        osw.flush()
+        osw.close()
+    }
+
 //
     private fun handleIntent() {
 
@@ -108,17 +149,44 @@ class MainActivity: AppCompatActivity() {
             val inputString = remoteInput.getCharSequence(KEY_TEXT_REPLY).toString()
 
             inputTxt.text = inputString
-            val repliedNotification = Notification.Builder(this, channelID)
-                .setSmallIcon(android.R.drawable.ic_dialog_info)
-                .setContentText("Thought saved")
-                .build()
+
+            val current = LocalDateTime.now()
+
+            val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss.SSS")
+            val formatted = current.format(formatter)
+
+//            TODO get location here
+
+            val line = "${formatted}: ${inputString} \n"
+//            TODO handle file creation
+            File("/storage/emulated/0/funnl.txt").appendText(line)
+
+
+//            val repliedNotification = Notification.Builder(this, channelID)
+//                .setSmallIcon(android.R.drawable.ic_dialog_info)
+//                .setContentText("Thought saved")
+//                .build()
             // TODO timer to replace ongoing notification with 'success' or 'failure'
 
-            sendNotification(View(this))
+//            sendNotification(View(this))
 
 
 
         }
     }
 
+    override fun onRequestPermissionsResult(requestCode: Int,
+                                             permissions: Array<String>, grantResults: IntArray) {
+        when (requestCode) {
+            RECORD_REQUEST_CODE -> {
+
+                if (grantResults.isEmpty() || grantResults[0] != PackageManager.PERMISSION_GRANTED) {
+
+                    Log.i(TAG, "Permission has been denied by user")
+                } else {
+                    Log.i(TAG, "Permission has been granted by user")
+                }
+            }
+        }
+    }
 }
