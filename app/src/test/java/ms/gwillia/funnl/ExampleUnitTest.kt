@@ -1,4 +1,4 @@
-package com.example.funnl
+package ms.gwillia.funnl
 
 import org.junit.Test
 

@@ -1,4 +1,4 @@
-package com.example.funnl
+package ms.gwillia.funnl
 
 import android.app.IntentService
 import android.content.Intent

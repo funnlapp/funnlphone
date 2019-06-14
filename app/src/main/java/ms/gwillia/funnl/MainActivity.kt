@@ -1,4 +1,4 @@
-package com.example.funnl
+package ms.gwillia.funnl
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -9,13 +9,13 @@ import android.os.Bundle
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.graphics.Color
 import android.graphics.drawable.Icon
 import android.os.Environment
 import android.support.v4.app.ActivityCompat
 import android.support.v4.content.ContextCompat
 import android.util.Log
 import android.view.View
+import com.example.funnl.R
 import kotlinx.android.synthetic.main.activity_main.*
 import java.io.File
 import java.io.FileOutputStream
@@ -114,7 +114,8 @@ class MainActivity: AppCompatActivity() {
         val newMessageNotification = Notification.Builder(this, channelIDOngoing)
             .setColor(
                 ContextCompat.getColor(this,
-                R.color.colorPrimary))
+                    R.color.colorPrimary
+                ))
             .setSmallIcon(
                 android.R.drawable.ic_dialog_info)
             .setOngoing(true)
